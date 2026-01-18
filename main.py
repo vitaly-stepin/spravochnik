@@ -1,19 +1,13 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from core.config_loader import settings
-
-from auth.routes.auth_router import auth_router
-from user.routes.user_router import user_router
+from app.config_loader import settings
+from app.organization.routes import building_router, activity_router, organization_router
 
 openapi_tags = [
-    {
-        "name": "Users",
-        "description": "User operations",
-    },
-    {
-        "name": "Health Checks",
-        "description": "Application health checks",
-    }
+    {"name": "Buildings", "description": "Building operations"},
+    {"name": "Activities", "description": "Activity operations"},
+    {"name": "Organizations", "description": "Organization operations"},
+    {"name": "Health Checks", "description": "Application health checks"},
 ]
 
 app = FastAPI(openapi_tags=openapi_tags)
@@ -29,10 +23,12 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.include_router(auth_router, prefix='/api')
-app.include_router(user_router, prefix='/api', tags=['Users'])
+app.include_router(building_router, prefix="/api/v1")
+app.include_router(activity_router, prefix="/api/v1")
+app.include_router(organization_router, prefix="/api/v1")
 
-@app.get("/health", tags=['Health Checks'])
-def read_root():
+
+@app.get("/health", tags=["Health Checks"])
+async def health_check():
     return {"health": "true"}
 

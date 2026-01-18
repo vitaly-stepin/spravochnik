@@ -27,17 +27,17 @@ class Settings(BaseSettings):
         extra="ignore",
         env_ignore_empty = True,
     )
-    DOMAIN: str = 'localhost'
+    HOST: str = 'localhost'
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
-    JWT_SECRET_KEY: str
+    API_KEY: str
 
     @computed_field
     @property
     def server_host(self) -> str:
         # Use HTTPS for anything other than local development
         if self.ENVIRONMENT == "local":
-            return f"http://{self.DOMAIN}"
-        return f"https://{self.DOMAIN}"
+            return f"http://{self.HOST}"
+        return f"https://{self.HOST}"
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
@@ -52,11 +52,14 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[misc]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
-        return MultiHostUrl.build(
-            scheme="postgresql+psycopg2",
-            username=self.POSTGRESQL_USERNAME,
-            password=self.POSTGRESQL_PASSWORD,
-            host=self.POSTGRESQL_SERVER,
-            port=self.POSTGRESQL_PORT,
-            path=self.POSTGRESQL_DATABASE,
+        return PostgresDsn(
+                MultiHostUrl.build(
+                scheme="postgresql+asyncpg",
+                username=self.POSTGRESQL_USERNAME,
+                password=self.POSTGRESQL_PASSWORD,
+                host=self.POSTGRESQL_SERVER,
+                port=self.POSTGRESQL_PORT,
+                path=self.POSTGRESQL_DATABASE,
+            )
         )
+    

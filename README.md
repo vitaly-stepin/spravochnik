@@ -1,74 +1,24 @@
-# FastAPI + SQLAlchemy 2 + Alembic + Postgresql
+## Как поднять проект локально:
 
-### The project includes:
-- FastAPI
-- SQLAlchemy 2
-- Alembic
-- PostreSQL
-- Type Safe Environment Variables
-- Feature Based Project Structure like Django's
-
-This is a starter template for creating API's with FastAPI, SQLAlchemy 2, Alembic and Postgresql
-
-The project has env setup. You can view how the config works inside the `/core/config.py` directory, adding new env variables is trivial.
-
-The project is also has a feature based architecture setup for you so that you have a clear idea on how to continue building and adding new features.
-
-## How to use this starter
-
-Clone the repository:
-```
-git clone https://github.com/Tenacity-Dev/fastapi-sqlalchemy2-alembic-postgresql.git
+```bash
+git clone https://github.com/vitaly-stepin/spravochnik.git  # Клонируем проект
+cp .env.local .env                 # Создаем переменные окружения
+poetry install --with dev          # Ставим зависимости
+poetry env activate                # Активируем виртуальное окружени (если poetry v1, то poetry shell)
+make up                            # Билдим образ и поднимаем контейнеры
+make migrate                       # Накатываем миграции через алембик
+make feed                          # Наполняем БД тестовыми данными
+make dev                           # Запускаем сервис
 ```
 
-cd into the repository:
-```
-cd fastapi-sqlalchemy2-alembic-postgresql
-```
+API доступен на http://localhost:8000/docs
 
-To make this repository yours:
-```
-rm -rf .git && git init
-git add .
-git commit -m "Initial commit"
-```
+## Заметки
 
-Create a virtual environment with python:
-```
-python -m venv .venv
-# or
-python3 -m venv .venv
-```
+- Написал тесты на базовые позитивные и негативные сценарии для репозитория организаций (можно запустить командой make test).
+- Вместо ID организаций, видов деятельности и зданий можно использовать uuid, чтобы скрыть реальное количество записей в БД. Но для простоты оставил ID.
+- Добавил Makefile для удобства
+- В методы, где получаем все доступные сущности из БД добавил батчинг
+- Использовал квери параметры для простоты, но альтернативно можно сделать API через метод POST и передавать offset и limit в теле запроса и добавить для них pydantic модели, например, GetBuildingsListRequest
+- Взаимодействие с API реализовано через паттерн репозитории.
 
-Activate the virtual environment:
-```
-# For linux or mac
-source .venv/bin/activate
-
-# For windows
-venv\Scripts\activate
-```
-
-Install the requirements:
-```
-pip install -r requirements.txt
-```
-
-Create a .env file and add the required env variables to it (the example of required variables can be seen in .env.local):
-```
-cp .env.local .env
-
-# Add the required env vars
-```
-
-(Optional) Run migrations to create initial user:
-```
-alembic upgrade head
-```
-
-You can also delete the one existing migration and do as you please.
-
-Start the local server:
-```
-fastapi dev main.py
-```

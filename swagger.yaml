@@ -1,0 +1,757 @@
+openapi: "3.0.0"
+
+info:
+  version: 1.0.0
+  title: Справочник организаций
+  description: API для получения информации об организациях, зданиях и видах деятельности
+
+
+paths:
+  # ==================== Buildings ====================
+  /v1/buildings:
+    get:
+      summary: Получение списка зданий
+      tags:
+        - Buildings
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: query
+          name: skip
+          description: Количество записей, которое нужно пропустить
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+
+        - in: query
+          name: limit
+          description: Максимальное количество записей (не более 1000)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Building'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/buildings/{building_id}:
+    get:
+      summary: Получение здания по ID
+      tags:
+        - Buildings
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: path
+          name: building_id
+          description: ID здания
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Building'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  # ==================== Organizations ====================
+  /v1/organizations:
+    get:
+      summary: Получение списка организаций
+      tags:
+        - Organizations
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: query
+          name: skip
+          description: Количество записей, которое нужно пропустить
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+
+        - in: query
+          name: limit
+          description: Максимальное количество записей (не более 1000)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/organizations/search/radius:
+    get:
+      summary: Поиск организаций в радиусе от точки
+      tags:
+        - Organizations
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: query
+          name: latitude
+          description: Широта центра поиска
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -90
+            maximum: 90
+
+        - in: query
+          name: longitude
+          description: Долгота центра поиска
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -180
+            maximum: 180
+
+        - in: query
+          name: radius_km
+          description: Радиус поиска в километрах (максимум 100)
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 100
+            exclusiveMinimum: true
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/organizations/search/area:
+    get:
+      summary: Поиск организаций в прямоугольной области
+      tags:
+        - Organizations
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: query
+          name: min_lat
+          description: Минимальная широта
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -90
+            maximum: 90
+
+        - in: query
+          name: max_lat
+          description: Максимальная широта
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -90
+            maximum: 90
+
+        - in: query
+          name: min_lon
+          description: Минимальная долгота
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -180
+            maximum: 180
+
+        - in: query
+          name: max_lon
+          description: Максимальная долгота
+          required: true
+          schema:
+            type: number
+            format: float
+            minimum: -180
+            maximum: 180
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/organizations/by-building/{building_id}:
+    get:
+      summary: Получение организаций по ID здания
+      tags:
+        - Organizations
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: path
+          name: building_id
+          description: ID здания
+          required: true
+          schema:
+            type: integer
+
+        - in: query
+          name: skip
+          description: Количество записей, которое нужно пропустить
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+
+        - in: query
+          name: limit
+          description: Максимальное количество записей (не более 1000)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/organizations/by-activity/{activity_id}:
+    get:
+      summary: Получение организаций по виду деятельности
+      tags:
+        - Organizations
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: path
+          name: activity_id
+          description: ID вида деятельности
+          required: true
+          schema:
+            type: integer
+
+        - in: query
+          name: skip
+          description: Количество записей, которое нужно пропустить
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+
+        - in: query
+          name: limit
+          description: Максимальное количество записей (не более 1000)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/organizations/by-name/{name}:
+    get:
+      summary: Получение организации по названию
+      tags:
+        - Organizations
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: path
+          name: name
+          description: Название организации
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/organizations/{organization_id}:
+    get:
+      summary: Получение организации по ID
+      tags:
+        - Organizations
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: path
+          name: organization_id
+          description: ID организации
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  # ==================== Activities ====================
+  /v1/activities:
+    get:
+      summary: Получение списка видов деятельности
+      tags:
+        - Activities
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: query
+          name: skip
+          description: Количество записей, которое нужно пропустить
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+
+        - in: query
+          name: limit
+          description: Максимальное количество записей (не более 1000)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/activities/tree:
+    get:
+      summary: Получение дерева видов деятельности
+      description: Возвращает иерархическую структуру видов деятельности с вложенными дочерними элементами
+      tags:
+        - Activities
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityTree'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+  /v1/activities/{activity_id}:
+    get:
+      summary: Получение вида деятельности по ID
+      tags:
+        - Activities
+      parameters:
+        - in: header
+          name: X-Api-Key
+          description: Авторизационный хедер
+          required: true
+          schema:
+            type: string
+
+        - in: path
+          name: activity_id
+          description: ID вида деятельности
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityWithChildren'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/UnknownError'
+
+components:
+  securitySchemes:
+    RemoteSystem:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+
+  schemas:
+    Building:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        address:
+          type: string
+          example: г. Москва, ул. Ленина, 1
+        latitude:
+          type: number
+          format: float
+          example: 55.7558
+        longitude:
+          type: number
+          format: float
+          example: 37.6173
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    PhoneNumber:
+      type: object
+      properties:
+        number:
+          type: string
+          example: "+7 (495) 123-45-67"
+
+    Activity:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Еда
+        level:
+          type: integer
+          description: Уровень вложенности (1-3)
+          example: 1
+        parent_id:
+          type: integer
+          nullable: true
+          description: ID родительского вида деятельности
+          example: null
+
+    ActivityTree:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Еда
+        level:
+          type: integer
+          example: 1
+        parent_id:
+          type: integer
+          nullable: true
+          example: null
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityTree'
+
+    ActivityWithChildren:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Еда
+        level:
+          type: integer
+          example: 1
+        parent_id:
+          type: integer
+          nullable: true
+          example: null
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityWithChildren'
+
+    OrganizationDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: ООО «Рога и Копыта»
+        building_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        building:
+          $ref: '#/components/schemas/Building'
+        phone_numbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumber'
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Activity'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 401
+        message:
+          type: string
+          example: Unauthorized
+
+  responses:
+    Unauthorized:
+      description: Ошибка авторизации
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            InvalidToken:
+              value:
+                code: 401
+                message: Unauthorized
+
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            NotFound:
+              value:
+                code: 404
+                message: Not found
+
+    ValidationError:
+      description: Ошибка валидации входных данных
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    loc:
+                      type: array
+                      items:
+                        type: string
+                    msg:
+                      type: string
+                    type:
+                      type: string
+
+    UnknownError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            ServerError:
+              value:
+                code: 500
+                message: Internal server error
